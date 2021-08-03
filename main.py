@@ -5,15 +5,13 @@ from datetime import datetime
 
 from models import Article
 
+# urls
 LIST_URL = "https://mapping-test.fra1.digitaloceanspaces.com/data/list.json"
 DETAIL_URL = "https://mapping-test.fra1.digitaloceanspaces.com/data/articles/{}.json"
 MEDIA_URL = "https://mapping-test.fra1.digitaloceanspaces.com/data/media/{}.json"
 
+# datetime format
 FMT = "%Y-%m-%d-%H:%M:%S"
-
-
-# fetch list of articles
-# for every article in the list fetch its details and print mapped Article object
 
 
 def fetch_article_list() -> list:
@@ -64,7 +62,6 @@ def print_mapped_articles(article_list: list):
             media = fetch_media(article_id)
             if not media:
                 media = []
-
             article_input = {
                 "id": json["id"],
                 "original_language": json["original_language"],
@@ -83,7 +80,8 @@ def print_mapped_articles(article_list: list):
 
 
 if __name__ == '__main__':
-    while (True):
+    # Deliberately avoiding system dependant solution like cron
+    # In real world app I would consider Celery Beat or similar solution
+    while True:
         print_mapped_articles(fetch_article_list())
         time.sleep(300)
-
