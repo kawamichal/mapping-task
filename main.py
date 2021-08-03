@@ -5,6 +5,8 @@ from datetime import datetime
 
 from models import Article
 
+from bs4 import BeautifulSoup
+
 # urls
 LIST_URL = "https://mapping-test.fra1.digitaloceanspaces.com/data/list.json"
 DETAIL_URL = "https://mapping-test.fra1.digitaloceanspaces.com/data/articles/{}.json"
@@ -25,6 +27,18 @@ def fetch_article_list() -> list:
     except requests.exceptions.RequestException as err:
         # example handling of the error
         SystemExit(err)
+
+
+def strip_text_sections_from_html(json: dict) -> list:
+    """
+    Returns list of text sections stripped from html elements.
+    """
+    sections = []
+    for section in json["sections"]:
+        if section["type"] not in ["media", "image"]:
+            section["text"] = BeautifulSoup(section["text"], features="html.parser").get_text()
+            sections.append(section)
+    return sections
 
 
 def fetch_media(article_id: str) -> list:
@@ -58,7 +72,7 @@ def print_mapped_articles(article_list: list):
             detail_response = requests.get(DETAIL_URL.format(article_id))
             detail_response.raise_for_status()
             json = detail_response.json()
-            sections = [section for section in json["sections"] if section["type"] not in ["media", "image"]]
+            sections = strip_text_sections_from_html(json)
             media = fetch_media(article_id)
             if not media:
                 media = []
